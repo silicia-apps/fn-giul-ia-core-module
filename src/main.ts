@@ -18,27 +18,26 @@ type Context = {
 };
 
 export default async ({ req, res, log, error }: Context) => {
-  log('connect to appwrite api');
-  const client = new Client()
-    .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-    .setProject(process.env.APPWRITE_PROJECT_ID!)
-    .setKey(process.env.APPWRITE_API_KEY!);
-  let datastore = new Databases(client);
-  let chat = await datastore.listDocuments(
-    process.env.APPWRITE_DATABASE_ID!,
-    process.env.APPWRITE_TABLE_CHATS_ID!,
-    [
-      Query.equal('channel', 'telegram'),
-      Query.equal('chat_id', String(req.body.message.chat.id)),
-      Query.limit(1),
-    ]
-  );
   const telegram_token = req.headers['x-telegram-bot-api-secret-token'];
   try {
     if (telegram_token === process.env.APPWRITE_API_KEY!) {
       log('connect to Telegram Bot');
       const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
-
+      log('connect to appwrite api');
+      const client = new Client()
+        .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+        .setProject(process.env.APPWRITE_PROJECT_ID!)
+        .setKey(process.env.APPWRITE_API_KEY!);
+      let datastore = new Databases(client);
+      let chat = await datastore.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_TABLE_CHATS_ID!,
+        [
+          Query.equal('channel', 'telegram'),
+          Query.equal('chat_id', String(req.body.message.chat.id)),
+          Query.limit(1),
+        ]
+      );
       switch (req.body.message.text) {
         case '/start':
           log('present the bot');
@@ -130,7 +129,13 @@ export default async ({ req, res, log, error }: Context) => {
           action.channel === 'telegram'
         ) {
           log('add message in conversation');
-
+          log('connect to appwrite api');
+          log(JSON.stringify(req));
+          const client = new Client()
+            .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+            .setProject(process.env.APPWRITE_PROJECT_ID!)
+            .setKey(process.env.APPWRITE_API_KEY!);
+          let datastore = new Databases(client);
           datastore.createDocument(
             process.env.APPWRITE_DATABASE_ID!,
             process.env.APPWRITE_TABLE_MESSAGES_ID!,
@@ -138,7 +143,7 @@ export default async ({ req, res, log, error }: Context) => {
             {
               message: action.payload.value,
               bot: true,
-              chat: chat.documents[0].$id,
+              chat: req.body.thought.chat.$id
             }
           );
           log('connect to Telegram Bot');
