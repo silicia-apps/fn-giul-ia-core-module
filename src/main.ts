@@ -135,6 +135,14 @@ export default async ({ req, res, log, error }: Context) => {
             String(req.body.action.payload.chatid),
             req.body.action.payload.value
           );
+        } else {
+          log(req);
+          /*const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
+          log(`sent message to telegram channel`);
+          bot.telegram.sendMessage(
+            String(req.body.action.payload.chatid),
+            req.body.action.payload.value
+          );*/
         }
       } else {
         error('api key not is valid');
