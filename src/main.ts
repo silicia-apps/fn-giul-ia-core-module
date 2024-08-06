@@ -136,13 +136,12 @@ export default async ({ req, res, log, error }: Context) => {
             req.body.action.payload.value
           );
         } else {
-          log(req);
-          /*const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
-          log(`sent message to telegram channel`);
+          const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
+          log(`sent action to telegram channel`);
           bot.telegram.sendMessage(
-            String(req.body.action.payload.chatid),
-            req.body.action.payload.value
-          );*/
+            String(req.body.thought.chat.chat_id),
+            req.body.action
+          );
         }
       } else {
         error('api key not is valid');
@@ -151,7 +150,7 @@ export default async ({ req, res, log, error }: Context) => {
     if (req.method === 'GET') {
       return res.send('Silicia - Giul-IA BOT - telegram gateway');
     }
-  } catch (e: any) {
+ } catch (e: any) {
     error(JSON.stringify(e));
   }
   return res.empty();
