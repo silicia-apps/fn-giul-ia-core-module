@@ -141,7 +141,7 @@ export default async ({ req, res, log, error }: Context) => {
           .setProject(process.env.APPWRITE_PROJECT_ID!)
           .setKey(process.env.APPWRITE_API_KEY!);
         let datastore = new Databases(client);
-        const message: Models.DocumentList<any> =
+        const message: any =
           await datastore.listDocuments(
             process.env.APPWRITE_DATABASE_ID!,
             process.env.APPWRITE_TABLE_TOUGHTS_ID!,
@@ -154,7 +154,7 @@ export default async ({ req, res, log, error }: Context) => {
           {
             message: action.payload.value,
             bot: true,
-            chat: req.body.thought.message.chat.$id,
+            chat: message.chat.documents[0].$id,
           }
         );
         log('connect to Telegram Bot');
