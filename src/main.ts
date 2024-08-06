@@ -222,7 +222,7 @@ export default async ({ req, res, log, error }: Context) => {
         const messages: Models.DocumentList<Message> =
           await datastore.listDocuments(
             process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_TABLE_TOUGHTS_ID!,
+            process.env.APPWRITE_TABLE_MESSAGES_ID!,
             [Query.equal('$id', req.body.thought.message.$id)]
           );
         if (messages.total > 0) {}
