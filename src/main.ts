@@ -19,7 +19,7 @@ type Context = {
 
 export default async ({ req, res, log, error }: Context) => {
   const telegram_token = req.headers['x-telegram-bot-api-secret-token'];
-  try {
+  //try {
     if (telegram_token === process.env.APPWRITE_API_KEY!) {
       log('connect to Telegram Bot');
       const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
@@ -168,8 +168,8 @@ export default async ({ req, res, log, error }: Context) => {
     if (req.method === 'GET') {
       return res.send('Silicia - Giul-IA BOT - telegram gateway');
     }
-  } catch (e: any) {
+ /* } catch (e: any) {
     error(JSON.stringify(e));
-  }
+  }*/
   return res.empty();
 };
