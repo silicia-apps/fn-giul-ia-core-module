@@ -17,6 +17,84 @@ type Context = {
   error: (msg: string) => void;
 };
 
+export interface HistoryItem {
+  role: 'model' | 'user';
+  parts: {
+    text: string;
+  }[];
+}
+
+export interface Message extends Models.Document{
+  $id: string;
+  message: string;
+  thought: Thought;
+  bot: boolean;
+  chat: Chat;
+}
+
+export interface Thought extends Models.Document {
+  thought: string;
+  message: Message;
+}
+
+export interface Chat {
+  $id: string;
+  channel: 'telegram' | 'alexa';
+  messages: Message[];
+}
+
+export interface Module {
+  name: string;
+  description: string;
+  queue: string[];
+  actions: string[];
+  events: string[];
+}
+export interface SlotLtm {
+  key: string;
+  value: string[];
+}
+
+export interface Es {
+  $id: string;
+  fear?: number;
+  happiness?: number;
+  sadness?: number;
+  anger?: number;
+  surprise?: number;
+  disgust?: number;
+  anxiety?: number;
+  excitement?: number;
+  frustration?: number;
+  satisfaction?: number;
+  curiosity?: number;
+  boredom?: number;
+  nostalgia?: number;
+  hope?: number;
+  pride?: number;
+  shame?: number;
+  concentration?: number;
+  confusion?: number;
+  calm?: number;
+  stress?: number;
+  creativity?: number;
+  empathy?: number;
+  logic?: number;
+  humor?: number;
+  learning?: number;
+  connection?: number;
+  autonomy?: number;
+}
+
+export interface Profile extends Models.Document {
+  name: string;
+  chats: Chat[];
+  es: Es;
+  queue: string[];
+  ltm: SlotLtm[];
+  modules: Module[];
+}
+
 export default async ({ req, res, log, error }: Context) => {
   const telegram_token = req.headers['x-telegram-bot-api-secret-token'];
   //try {
@@ -141,12 +219,14 @@ export default async ({ req, res, log, error }: Context) => {
           .setProject(process.env.APPWRITE_PROJECT_ID!)
           .setKey(process.env.APPWRITE_API_KEY!);
         let datastore = new Databases(client);
-        const message: any =
+        const messages: Models.DocumentList<Message> =
           await datastore.listDocuments(
             process.env.APPWRITE_DATABASE_ID!,
             process.env.APPWRITE_TABLE_TOUGHTS_ID!,
             [Query.equal('message', req.body.thought.message.$id)]
           );
+        if (messages.total > 0) {}
+        console.log(JSON.stringify(messages.documents[0]));
         datastore.createDocument(
           process.env.APPWRITE_DATABASE_ID!,
           process.env.APPWRITE_TABLE_MESSAGES_ID!,
@@ -154,9 +234,10 @@ export default async ({ req, res, log, error }: Context) => {
           {
             message: action.payload.value,
             bot: true,
-            chat: message.documents[0].chat.$id,
+            chat: messages.documents[0].chat.$id,
           }
         );
+        
         log('connect to Telegram Bot');
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
         log(`sent message to telegram channel`);
