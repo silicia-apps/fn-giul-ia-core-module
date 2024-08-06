@@ -14,14 +14,13 @@ type Context = {
   req: any;
   res: any;
   log: (msg: string) => void;
-  error: (msg: string) => void; 
+  error: (msg: string) => void;
 };
 
 export default async ({ req, res, log, error }: Context) => {
   const telegram_token = req.headers['x-telegram-bot-api-secret-token'];
   try {
     if (telegram_token === process.env.APPWRITE_API_KEY!) {
-      log(req.body.message);
       log('connect to Telegram Bot');
       const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
       log('connect to appwrite api');
@@ -123,8 +122,23 @@ export default async ({ req, res, log, error }: Context) => {
           }
       }
     } else {
-      log(JSON.stringify(req));
-      error('api key not is valid');
+      if (req.body.action) {
+        if (
+          req.body.action.module === 'core' &&
+          req.body.action.action === 'talk' &&
+          req.body.action.channel === 'telegram'
+        ) {
+          log('connect to Telegram Bot');
+          const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
+          log(`sent message to telegram channel`);
+          bot.telegram.sendMessage(
+            String(req.body.action.payload.chatid),
+            req.body.action.payload.value
+          );
+        }
+      } else {
+        error('api key not is valid');
+      }
     }
     if (req.method === 'GET') {
       return res.send('Silicia - Giul-IA BOT - telegram gateway');
