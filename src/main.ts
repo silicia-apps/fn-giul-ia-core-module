@@ -121,8 +121,13 @@ export default async ({ req, res, log, error }: Context) => {
           }
       }
     } else {
+      console.log(req.body.chat);
       if (req.body.action) {
         const action = JSON.parse(req.body.action);
+        console.log(JSON.stringify(action));
+        console.log(action.module);
+        console.log(action.channel);
+        console.log(action.action);
         if (
           action.module === 'core' &&
           action.action === 'talk' &&
@@ -150,7 +155,7 @@ export default async ({ req, res, log, error }: Context) => {
           const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
           log(`sent message to telegram channel`);
           bot.telegram.sendMessage(
-            String(action.payload.chatid),
+            String(action.payload.chat_id),
             action.payload.value
           );
         } else {
