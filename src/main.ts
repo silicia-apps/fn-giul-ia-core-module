@@ -39,6 +39,7 @@ export interface Thought extends Models.Document {
 
 export interface Chat {
   $id: string;
+  chat_id: string;
   channel: 'telegram' | 'alexa';
   messages: Message[];
 }
@@ -199,22 +200,9 @@ export default async ({ req, res, log, error }: Context) => {
         }
     }
   } else {
-    console.log(req.body.chat);
     if (req.body.action) {
       const action = JSON.parse(req.body.action);
-      console.log(JSON.stringify(action));
-      console.log(action.module);
-      console.log(action.channel);
-      console.log(action.action);
-      if (
-        action.module === 'core' &&
-        action.action === 'talk' &&
-        action.channel === 'telegram'
-      ) {
-        log('add message in conversation');
-        log('connect to appwrite api');
-        log(JSON.stringify(req));
-        const client = new Client()
+      const client = new Client()
           .setEndpoint(process.env.APPWRITE_ENDPOINT!)
           .setProject(process.env.APPWRITE_PROJECT_ID!)
           .setKey(process.env.APPWRITE_API_KEY!);
@@ -226,8 +214,13 @@ export default async ({ req, res, log, error }: Context) => {
             [Query.equal('$id', req.body.thought.message.$id)]
           );
         if (messages.total > 0) {}
-        console.log(req.body.thought.message.$id);
-        console.log(JSON.stringify(messages.documents[0]));
+      if (
+        action.module === 'core' &&
+        action.action === 'talk' &&
+        action.channel === 'telegram'
+      ) {
+        log('add message in conversation');
+        log('connect to appwrite api'); 
         datastore.createDocument(
           process.env.APPWRITE_DATABASE_ID!,
           process.env.APPWRITE_TABLE_MESSAGES_ID!,
@@ -250,7 +243,7 @@ export default async ({ req, res, log, error }: Context) => {
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
         log(`sent action to telegram channel`);
         bot.telegram.sendMessage(
-          String(req.body.thought.message.chat.chat_id),
+          String(messages.documents[0].chat.chat_id),
           req.body.action
         );
       }
