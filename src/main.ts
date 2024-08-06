@@ -145,7 +145,7 @@ export default async ({ req, res, log, error }: Context) => {
           await datastore.listDocuments(
             process.env.APPWRITE_DATABASE_ID!,
             process.env.APPWRITE_TABLE_TOUGHTS_ID!,
-            [Query.equal('message', req.body.message.chat.$id)]
+            [Query.equal('message', req.body.message.$id)]
           );
         datastore.createDocument(
           process.env.APPWRITE_DATABASE_ID!,
