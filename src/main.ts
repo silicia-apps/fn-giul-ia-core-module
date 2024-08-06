@@ -123,17 +123,18 @@ export default async ({ req, res, log, error }: Context) => {
       }
     } else {
       if (req.body.action) {
+        const action = JSON.parse(req.body.action);
         if (
-          req.body.action.module === 'core' &&
-          req.body.action.action === 'talk' &&
-          req.body.action.channel === 'telegram'
+          action.module === 'core' &&
+          action.action === 'talk' &&
+          action.channel === 'telegram'
         ) {
           log('connect to Telegram Bot');
           const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
           log(`sent message to telegram channel`);
           bot.telegram.sendMessage(
-            String(req.body.action.payload.chatid),
-            req.body.action.payload.value
+            String(action.payload.chatid),
+            action.payload.value
           );
         } else {
           const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
