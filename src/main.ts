@@ -154,7 +154,7 @@ export default async ({ req, res, log, error }: Context) => {
           {
             message: action.payload.value,
             bot: true,
-            chat: message.chat.documents[0].$id,
+            chat: message.documents[0].chat.$id,
           }
         );
         log('connect to Telegram Bot');
