@@ -96,188 +96,66 @@ export interface Profile extends Models.Document {
 }
 
 export default async ({ req, res, log, error }: Context) => {
-  var token = process.env.HA_TOKEN!;
-  log(JSON.stringify(req));
-  log(`Try to connect to HA endpoint ${process.env.HA_ENDPOINT}`);
-  /*fetch("http://185.13.223.52:8123/api/states", {
-  headers: { Authorization: "Bearer " + token },
-})
-  .then(function (response) {
-    /*if (!response.ok) {
-    return Promise.reject(response);
-  }
-    return response.text();
-  })
-  .then(function (body) {
-    const entities = [];
-    JSON.parse(body).forEach((entity) => {
-      if (entity.entity_id.search("light") !== -1) {
-        entities.push({
-          entity_id: entity.entity_id,
-          friendly_name: entity.attributes.friendly_name,
-        });
-      }
-    });
-  });
-  if (telegram_token === process.env.APPWRITE_API_KEY!) {
-    log('connect to Telegram Bot');
-    const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
-    log('connect to appwrite api');
-    const client = new Client()
-      .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-      .setProject(process.env.APPWRITE_PROJECT_ID!)
-      .setKey(process.env.APPWRITE_API_KEY!);
-    let datastore = new Databases(client);
-    let chat = await datastore.listDocuments(
-      process.env.APPWRITE_DATABASE_ID!,
-      process.env.APPWRITE_TABLE_CHATS_ID!,
-      [
-        Query.equal('channel', 'telegram'),
-        Query.equal('chat_id', String(req.body.message.chat.id)),
-        Query.limit(1),
-      ]
-    );
-    switch (req.body.message.text) {
-      case '/start':
-        log('present the bot');
-        bot.telegram.sendMessage(
-          String(req.body.message.chat.id),
-          'Hello everyone! I am an AI under development, with learning and conversational abilities. To start interacting with me, type the magic word. 😉 What is the magic word?'
-        );
-        break;
-      case 'start@imitation@game':
-        log('Registrazione Bot');
-        if (chat.total === 0) {
-          log('User not present');
-          const new_user = {
-            es: { fear: 0 },
-            ltm: [
+  try {
+    const headers = { Authorization: 'Bearer ' + process.env.HA_TOKEN! };
+    log(JSON.stringify(req));
+    //const req = {"bodyRaw":"{\"action\":\"{\\\"module\\\":\\\"home-assistant\\\",\\\"action\\\":\\\"get\\\",\\\"channel\\\":\\\"entities\\\"}\",\"state\":\"waiting\",\"$id\":\"66b3bba00002df252252\",\"$permissions\":[],\"$createdAt\":\"2024-08-07T18:23:28.067+00:00\",\"$updatedAt\":\"2024-08-07T18:23:28.067+00:00\",\"thought\":{\"thought\":\"{\\\"situation\\\":\\\"L'utente xFr4xx mi ha chiesto di accendere la luce del bagno.\\\",\\\"interpretation\\\":\\\"L'utente desidera che io interagisca con l'ambiente tramite Home Assistant.\\\",\\\"reflection\\\":\\\"Devo verificare se ho le informazioni necessarie per eseguire l'azione. Se non ho il nome dell'entit\\u00e0 'luce del bagno', dovr\\u00f2 chiedere maggiori dettagli.\\\"}\",\"$id\":\"66b3af380029da08ba04\",\"$createdAt\":\"2024-08-07T17:30:32.747+00:00\",\"$updatedAt\":\"2024-08-07T17:30:32.747+00:00\",\"$permissions\":[],\"message\":{\"message\":\"puoi accendere la luce del bagno ?\",\"bot\":false,\"$id\":\"66b3af330005bc8fb2ea\",\"$createdAt\":\"2024-08-07T17:30:27.171+00:00\",\"$updatedAt\":\"2024-08-07T17:30:32.768+00:00\",\"$permissions\":[],\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66aea08e003d46e738fa\"},\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66aea1a7003cba1f2b86\"},\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66b1f8ea001d5b79ca27\"}","body":{"action":"{\"module\":\"home-assistant\",\"action\":\"get\",\"channel\":\"entities\"}","state":"waiting","$id":"66b3bba00002df252252","$permissions":[],"$createdAt":"2024-08-07T18:23:28.067+00:00","$updatedAt":"2024-08-07T18:23:28.067+00:00","thought":{"thought":"{\"situation\":\"L'utente xFr4xx mi ha chiesto di accendere la luce del bagno.\",\"interpretation\":\"L'utente desidera che io interagisca con l'ambiente tramite Home Assistant.\",\"reflection\":\"Devo verificare se ho le informazioni necessarie per eseguire l'azione. Se non ho il nome dell'entità 'luce del bagno', dovrò chiedere maggiori dettagli.\"}","$id":"66b3af380029da08ba04","$createdAt":"2024-08-07T17:30:32.747+00:00","$updatedAt":"2024-08-07T17:30:32.747+00:00","$permissions":[],"message":{"message":"puoi accendere la luce del bagno ?","bot":false,"$id":"66b3af330005bc8fb2ea","$createdAt":"2024-08-07T17:30:27.171+00:00","$updatedAt":"2024-08-07T17:30:32.768+00:00","$permissions":[],"$databaseId":"66ae9f440015b50a678b","$collectionId":"66aea08e003d46e738fa"},"$databaseId":"66ae9f440015b50a678b","$collectionId":"66aea1a7003cba1f2b86"},"$databaseId":"66ae9f440015b50a678b","$collectionId":"66b1f8ea001d5b79ca27"},"headers":{"host":"66b3bba027b3c:3000","user-agent":"Appwrite/1.5.7","content-type":"application/json","x-appwrite-trigger":"event","x-appwrite-event":"databases.66ae9f440015b50a678b.collections.66b1f8ea001d5b79ca27.documents.66b3bba00002df252252.create","x-appwrite-user-id":"65eee35b6bf7806d9eb5","connection":"keep-alive","content-length":"1204"},"method":"POST","host":"66b3bba027b3c","scheme":"http","query":{},"queryString":"","port":3000,"url":"http://66b3bba027b3c:3000/","path":"/"}
+    log(`Try to connect to HA endpoint ${process.env.HA_ENDPOINT}`);
+    const action = JSON.parse(req.body.action);
+    if (action.module === 'home-assistant') {
+      switch (action.action) {
+        case 'get':
+          switch (action.channel) {
+            case 'lights':
+            default:
+              log(`Try to get Light HA Entities`);
+              const request = (
+                await fetch(`${process.env.HA_ENDPOINT}/states`, {
+                  headers: headers,
+                })
+              ).text();
+              const ha_entities = await request;
+              const entities: { entity_id: any; friendly_name: any }[] = [];
+              JSON.parse(ha_entities).forEach((entity: any) => {
+                if (entity.entity_id.search('light') !== -1) {
+                  entities.push({
+                    entity_id: entity.entity_id,
+                    friendly_name: entity.attributes.friendly_name,
+                  });
+                }
+              });
+              log(`founded this some light`);
+              log(entities.toString());
+              log('connect to appwrite api');
+              const client = new Client()
+                .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+                .setProject(process.env.APPWRITE_PROJECT_ID!)
+                .setKey(process.env.APPWRITE_API_KEY!);
+              let datastore = new Databases(client);
+              log('connect to appwrite api');
+            /*datastore.createDocument(
+              process.env.APPWRITE_DATABASE_ID!,
+              process.env.APPWRITE_TABLE_MESSAGES_ID,
+              ID.unique(),
               {
-                key: 'first_name_user',
-                value: [req.body.message.from.first_name],
-              },
-              {
-                key: 'last_name_user',
-                value: [req.body.message.from.last_name],
-              },
-              {
-                key: 'prefered_language_user',
-                value: [req.body.message.from.language_code],
-              },
-              {
-                key: 'username_user',
-                value: [req.body.message.from.username],
-              },
-            ],
-            name: req.body.message.from.username,
-            chats: [
-              {
-                channel: 'telegram',
-                chat_id: String(req.body.message.chat.id),
-              },
-            ],
-          };
-          log(`write new user`);
-          log(JSON.stringify(new_user));
-          await datastore.createDocument(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_TABLE_PROFILES_ID!,
-            ID.unique(),
-            new_user
-          );
-          log(`user created`);
-          bot.telegram.sendMessage(
-            String(req.body.message.chat.id),
-            "You managed to say the magic word and now we can finally start interacting. 🤖 If you're curious to see what commands I can execute, visit t.me/giul_ia_actions_bot, while if you want to take a look at my thought process, I'm waiting for you at t.me/giul_ia_think_bot. To interact with me, just write in this chat! 😉 Up until now, you've been shown prerendered text, now the magic happens."
-          );
-        } else {
-          bot.telegram.sendMessage(
-            String(req.body.message.chat.id),
-            'Welcome Back to Giulia BOT'
-          );
-          log(`user already in database`);
-        }
-        break;
-      default:
-        if (chat.total > 0) {
-          datastore.createDocument(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_TABLE_MESSAGES_ID!,
-            ID.unique(),
-            {
-              chat: chat.documents[0].$id,
-              message: req.body.message.text,
-            }
-          );
-
-          log('add message to user chat');
-        } else {
-          error('No User Found');
-          bot.telegram.sendMessage(
-            String(req.body.message.chat.id),
-            "i'm curious to get to know you, but to interact with you, you'll need to say the magic word! 😉 What are you waiting for? 😄"
-          );
-        }
-    }
-  } else {
-    if (req.body.action) {
-      const action = JSON.parse(req.body.action);
-      const client = new Client()
-        .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-        .setProject(process.env.APPWRITE_PROJECT_ID!)
-        .setKey(process.env.APPWRITE_API_KEY!);
-      let datastore = new Databases(client);
-      const messages: Models.DocumentList<Message> =
-        await datastore.listDocuments(
-          process.env.APPWRITE_DATABASE_ID!,
-          process.env.APPWRITE_TABLE_MESSAGES_ID!,
-          [Query.equal('$id', req.body.thought.message.$id)]
-        );
-      if (messages.total > 0) {
-        if (
-          action.module === 'core' &&
-          action.action === 'talk' &&
-          action.channel === 'telegram'
-        ) {
-          log('add message in conversation');
-          log('connect to appwrite api');
-          datastore.createDocument(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_TABLE_MESSAGES_ID!,
-            ID.unique(),
-            {
-              message: action.payload.value,
-              bot: true,
-              chat: messages.documents[0].chat.$id,
-            }
-          );
-          log('connect to Telegram Bot');
-          const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
-          log(`sent message to telegram channel to ${action.payload.chat_id}`);
-          bot.telegram.sendMessage(
-            String(action.payload.chatid),
-            action.payload.value
-          );
-        } else {
-          console.log(JSON.stringify(req));
-          const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
-          log(`sent action to telegram channel`);
-          bot.telegram.sendMessage(
-            messages.documents[0].chat.chat_id,
-            req.body.action
-          );
-        }
+                message: `{ 'module': 'home-assistant', 'action': 'input', 'channel': 'lights', 'value': ${entities.toString()} }`,
+                bot: false,
+                //chat: req.thought.chat.$id
+              }
+            );*/
+          }
+          break;
+        case 'set':
+          break;
       }
     } else {
-      error('api key not is valid');
+      log(`This action not is for this module`);
     }
+    if (req.method === 'GET') {
+      return res.send('Silicia - Giul-IA BOT - home assistant module');
+    }
+    return res.empty();
+  } catch (e: any) {
+    error(e);
   }
-  if (req.method === 'GET') {
-    return res.send('Silicia - Giul-IA BOT - telegram gateway');
-  }
-  /* } catch (e: any) {
-    error(JSON.stringify(e));
-  }
-  return res.empty();*/
 };
-
