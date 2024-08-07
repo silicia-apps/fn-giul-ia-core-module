@@ -236,15 +236,15 @@ export default async ({ req, res, log, error }: Context) => {
         log(`sent message to telegram channel to ${action.payload.chat_id}`);
         log(JSON.stringify(action));
         bot.telegram.sendMessage(
-          String(action.payload.chat_id),
+          String(action.payload.chatid),
           action.payload.value
         );
       } else {
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
         log(`sent action to telegram channel`);
         bot.telegram.sendMessage(
-          String(messages.documents[0].chat.chat_id),
-          req.body.action
+          String(action.payload.chatid),
+          JSON.stringify(req.body.action)
         );
       }
     } else {
