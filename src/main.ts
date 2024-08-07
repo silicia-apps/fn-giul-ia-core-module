@@ -244,7 +244,7 @@ export default async ({ req, res, log, error }: Context) => {
           log(`sent action to telegram channel`);
           bot.telegram.sendMessage(
             messages.documents[0].chat.chat_id,
-            JSON.stringify(req.body.action)
+            req.body.action
           );
         }
       }
