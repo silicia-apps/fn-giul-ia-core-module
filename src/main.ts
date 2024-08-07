@@ -239,6 +239,7 @@ export default async ({ req, res, log, error }: Context) => {
             action.payload.value
           );
         } else {
+          console.log(JSON.stringify(req));
           const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
           log(`sent action to telegram channel`);
           bot.telegram.sendMessage(
