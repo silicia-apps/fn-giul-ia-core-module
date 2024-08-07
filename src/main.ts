@@ -24,7 +24,7 @@ export interface HistoryItem {
   }[];
 }
 
-export interface Message extends Models.Document{
+export interface Message extends Models.Document {
   $id: string;
   message: string;
   thought: Thought;
@@ -203,48 +203,49 @@ export default async ({ req, res, log, error }: Context) => {
     if (req.body.action) {
       const action = JSON.parse(req.body.action);
       const client = new Client()
-          .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-          .setProject(process.env.APPWRITE_PROJECT_ID!)
-          .setKey(process.env.APPWRITE_API_KEY!);
-        let datastore = new Databases(client);
-        const messages: Models.DocumentList<Message> =
-          await datastore.listDocuments(
-            process.env.APPWRITE_DATABASE_ID!,
-            process.env.APPWRITE_TABLE_MESSAGES_ID!,
-            [Query.equal('$id', req.body.thought.message.$id)]
-          );
-        if (messages.total > 0) {}
-      if (
-        action.module === 'core' &&
-        action.action === 'talk' &&
-        action.channel === 'telegram'
-      ) {
-        log('add message in conversation');
-        log('connect to appwrite api'); 
-        datastore.createDocument(
+        .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+        .setProject(process.env.APPWRITE_PROJECT_ID!)
+        .setKey(process.env.APPWRITE_API_KEY!);
+      let datastore = new Databases(client);
+      const messages: Models.DocumentList<Message> =
+        await datastore.listDocuments(
           process.env.APPWRITE_DATABASE_ID!,
           process.env.APPWRITE_TABLE_MESSAGES_ID!,
-          ID.unique(),
-          {
-            message: action.payload.value,
-            bot: true,
-            chat: messages.documents[0].chat.$id,
-          }
+          [Query.equal('$id', req.body.thought.message.$id)]
         );
-        log('connect to Telegram Bot');
-        const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
-        log(`sent message to telegram channel to ${action.payload.chat_id}`);
-        bot.telegram.sendMessage(
-          String(action.payload.chatid),
-          action.payload.value
-        );
-      } else {
-        const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
-        log(`sent action to telegram channel`);
-        bot.telegram.sendMessage(
-          String(action.payload.chatid),
-          JSON.stringify(req.body.action)
-        );
+      if (messages.total > 0) {
+        if (
+          action.module === 'core' &&
+          action.action === 'talk' &&
+          action.channel === 'telegram'
+        ) {
+          log('add message in conversation');
+          log('connect to appwrite api');
+          datastore.createDocument(
+            process.env.APPWRITE_DATABASE_ID!,
+            process.env.APPWRITE_TABLE_MESSAGES_ID!,
+            ID.unique(),
+            {
+              message: action.payload.value,
+              bot: true,
+              chat: messages.documents[0].chat.$id,
+            }
+          );
+          log('connect to Telegram Bot');
+          const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
+          log(`sent message to telegram channel to ${action.payload.chat_id}`);
+          bot.telegram.sendMessage(
+            String(action.payload.chatid),
+            action.payload.value
+          );
+        } else {
+          const bot = new Telegraf(process.env.TELEGRAM_TOKEN_ACTION!);
+          log(`sent action to telegram channel`);
+          bot.telegram.sendMessage(
+            String(action.payload.chatid),
+            JSON.stringify(req.body.action)
+          );
+        }
       }
     } else {
       error('api key not is valid');
