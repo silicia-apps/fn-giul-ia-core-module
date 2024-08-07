@@ -1,7 +1,7 @@
 import { Client, Databases, Query, ID, Models } from 'node-appwrite';
 import { Telegraf } from 'telegraf';
 
-//import * as process from './env.js';
+import * as process from './env.js';
 
 function log(text: string) {
   console.log(text);
@@ -97,8 +97,29 @@ export interface Profile extends Models.Document {
 }
 
 export default async ({ req, res, log, error }: Context) => {
-  const telegram_token = req.headers['x-telegram-bot-api-secret-token'];
-  //try {
+  var token = process.env.HA_TOKEN!;
+  log(JSON.stringify(req));
+  log(`Try to connect to HA endpoint ${process.env.HA_ENDPOINT}`);
+  /*fetch("http://185.13.223.52:8123/api/states", {
+  headers: { Authorization: "Bearer " + token },
+})
+  .then(function (response) {
+    /*if (!response.ok) {
+    return Promise.reject(response);
+  }
+    return response.text();
+  })
+  .then(function (body) {
+    const entities = [];
+    JSON.parse(body).forEach((entity) => {
+      if (entity.entity_id.search("light") !== -1) {
+        entities.push({
+          entity_id: entity.entity_id,
+          friendly_name: entity.attributes.friendly_name,
+        });
+      }
+    });
+  });
   if (telegram_token === process.env.APPWRITE_API_KEY!) {
     log('connect to Telegram Bot');
     const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
@@ -251,7 +272,7 @@ export default async ({ req, res, log, error }: Context) => {
     } else {
       error('api key not is valid');
     }
-  }
+  }*/
   if (req.method === 'GET') {
     return res.send('Silicia - Giul-IA BOT - telegram gateway');
   }
@@ -259,4 +280,4 @@ export default async ({ req, res, log, error }: Context) => {
     error(JSON.stringify(e));
   }*/
   return res.empty();
-};
+//};
