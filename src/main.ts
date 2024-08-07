@@ -1,6 +1,6 @@
 import { Client, Databases, Query, ID, Models } from 'node-appwrite';
 
-import * as process from './env.js';
+//import * as process from './env.js';
 
 function log(text: string) {
   console.log(text);
