@@ -231,10 +231,10 @@ export default async ({ req, res, log, error }: Context) => {
             chat: messages.documents[0].chat.$id,
           }
         );
-        
         log('connect to Telegram Bot');
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN!);
-        log(`sent message to telegram channel`);
+        log(`sent message to telegram channel to ${action.payload.chat_id}`);
+        log(JSON.stringify(action));
         bot.telegram.sendMessage(
           String(action.payload.chat_id),
           action.payload.value
