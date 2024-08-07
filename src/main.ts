@@ -272,12 +272,13 @@ export default async ({ req, res, log, error }: Context) => {
     } else {
       error('api key not is valid');
     }
-  }*/
+  }
   if (req.method === 'GET') {
     return res.send('Silicia - Giul-IA BOT - telegram gateway');
   }
   /* } catch (e: any) {
     error(JSON.stringify(e));
-  }*/
-  return res.empty();
-//};
+  }
+  return res.empty();*/
+};
+
