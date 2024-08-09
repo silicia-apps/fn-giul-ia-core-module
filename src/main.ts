@@ -159,7 +159,7 @@ export default async ({ req, res, log, error }: Context) => {
         );
         const request = (
           await fetch(
-            `${process.env.HA_ENDPOINT}/states/${action.payload.channel}`,
+            `${process.env.HA_ENDPOINT}/states/${action.channel}`,
             {
               headers: headers,
               method: 'POST',
