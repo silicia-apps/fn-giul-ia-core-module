@@ -122,7 +122,7 @@ export default async ({ req, res, log, error }: Context) => {
             ).text();
             const ha_entities = await request;
             const entities: { entity_id: any; friendly_name: any }[] = [];
-            debug(`entities: ${JSON.stringify(entities)}`);
+            debug(`entities: ${JSON.stringify(ha_entities)}`);
             JSON.parse(ha_entities).forEach((entity: any) => {
               if (entity.entity_id.search('light') !== -1) {
                 entities.push({
