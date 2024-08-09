@@ -96,6 +96,12 @@ export interface Profile extends Models.Document {
 }
 
 export default async ({ req, res, log, error }: Context) => {
+  function debug(text: string) {
+    if (process.env.DEBUG!.toLowerCase() === 'true') {
+      error(`debug: ${text}`);
+    }
+  }
+  debug(`request: ${JSON.stringify(req.body)}`);
   try {
     const headers = { Authorization: 'Bearer ' + process.env.HA_TOKEN! };
     //log(JSON.stringify(req));
@@ -132,7 +138,6 @@ export default async ({ req, res, log, error }: Context) => {
                 .setProject(process.env.APPWRITE_PROJECT_ID!)
                 .setKey(process.env.APPWRITE_API_KEY!);
               let datastore = new Databases(client);
-              log('connect to appwrite api');
               datastore.createDocument(
                 process.env.APPWRITE_DATABASE_ID!,
                 process.env.APPWRITE_TABLE_MESSAGES_ID!,
@@ -146,22 +151,27 @@ export default async ({ req, res, log, error }: Context) => {
           }
 
         case 'set':
-          default:
-            log(`Try to turn ${action.payload.value} ${action.payload.channel} device`);
-              const request = (
-                await fetch(`${process.env.HA_ENDPOINT}/states/${action.payload.channel}`, {
-                  headers: headers,
-                  method: 'POST',
-                  body: JSON.stringify({"state": action.payload.value })
-                })
-              ).text();
-              const result = await request;
-              log(JSON.stringify(result));
+        default:
+          log(
+            `Try to turn ${action.payload.value} ${action.payload.channel} device`
+          );
+          const request = (
+            await fetch(
+              `${process.env.HA_ENDPOINT}/states/${action.payload.channel}`,
+              {
+                headers: headers,
+                method: 'POST',
+                body: JSON.stringify({ state: action.payload.value }),
+              }
+            )
+          ).text();
+          const result = await request;
+          log(JSON.stringify(result));
       }
     } else {
       log(`This action not is for this module`);
     }
-    
+
     if (req.method === 'GET') {
       return res.send('Silicia - Giul-IA BOT - home assistant module');
     }
