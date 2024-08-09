@@ -100,7 +100,7 @@ export default async ({ req, res, log, error }: Context) => {
     if (process.env.DEBUG!.toLowerCase() === 'true') {
       error(`debug: ${text}`);
     }
-  }
+  } 
   debug(`request: ${JSON.stringify(req.body)}`);
   try {
     const headers = { Authorization: 'Bearer ' + process.env.HA_TOKEN! };
