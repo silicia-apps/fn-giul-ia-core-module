@@ -138,16 +138,17 @@ export default async ({ req, res, log, error }: Context) => {
               .setProject(process.env.APPWRITE_PROJECT_ID!)
               .setKey(process.env.APPWRITE_API_KEY!);
             let datastore = new Databases(client);
-            datastore.createDocument(
+            await datastore.createDocument(
               process.env.APPWRITE_DATABASE_ID!,
               process.env.APPWRITE_TABLE_MESSAGES_ID!,
               ID.unique(),
               {
-                message: `{ 'module': 'home-assistant', 'action': 'input', 'channel': 'lights', 'payload': ('value': '${JSON.stringify(entities)}' }}`,
+                message: `{ 'module': 'home-assistant', 'action': 'input', 'channel': 'lights', 'payload': {'value': '${JSON.stringify(entities)}' }}`,
                 bot: false,
                 chat: req.body.thought.chat.$id,
               }
             );
+            log(`added result to message queue`);
         }
         break;
       case 'set':
