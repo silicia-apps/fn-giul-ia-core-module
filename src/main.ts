@@ -95,6 +95,19 @@ export interface Profile extends Models.Document {
   modules: Module[];
 }
 
+export interface Action {
+  module: string;
+  channel: string;
+  action: 'input' | 'output';
+  payload?: {
+    key?: string;
+    value?: string;
+    type?: string;
+    chatid?: string;
+  };
+  thought?: Thought;
+}
+
 export default async ({ req, res, log, error }: Context) => {
   function debug(text: string) {
     if (process.env.DEBUG!.toLowerCase() === 'true') {
@@ -102,83 +115,77 @@ export default async ({ req, res, log, error }: Context) => {
     }
   }
   debug(`request: ${JSON.stringify(req.body)}`);
-  //try {
-  const headers = { Authorization: 'Bearer ' + process.env.HA_TOKEN! };
-  //log(JSON.stringify(req));
-  //const req = {"bodyRaw":"{\"action\":\"{\\\"module\\\":\\\"home-assistant\\\",\\\"action\\\":\\\"get\\\",\\\"channel\\\":\\\"lights\\\"}\",\"state\":\"waiting\",\"$id\":\"66b3c77a0034311279e4\",\"$permissions\":[],\"$createdAt\":\"2024-08-07T19:14:03.457+00:00\",\"$updatedAt\":\"2024-08-07T19:14:03.457+00:00\",\"thought\":{\"thought\":\"{\\\"situation\\\":\\\"L'utente xFr4xx mi ha chiesto di accendere la luce del bagno.\\\",\\\"interpretation\\\":\\\"L'utente desidera che io interagisca con l'ambiente tramite Home Assistant.\\\",\\\"reflection\\\":\\\"Devo verificare se ho le informazioni necessarie per eseguire l'azione. Se non ho il nome dell'entit\\u00e0 'luce del bagno', dovr\\u00f2 chiedere maggiori dettagli.\\\"}\",\"$id\":\"66b3af380029da08ba04\",\"$createdAt\":\"2024-08-07T17:30:32.747+00:00\",\"$updatedAt\":\"2024-08-07T19:13:21.133+00:00\",\"$permissions\":[],\"message\":{\"message\":\"puoi accendere la luce del bagno ?\",\"bot\":false,\"$id\":\"66b3af330005bc8fb2ea\",\"$createdAt\":\"2024-08-07T17:30:27.171+00:00\",\"$updatedAt\":\"2024-08-07T17:30:32.768+00:00\",\"$permissions\":[],\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66aea08e003d46e738fa\"},\"chat\":{\"channel\":\"telegram\",\"chat_id\":\"7045034835\",\"$id\":\"66b27ff2130cac12b5c0\",\"$createdAt\":\"2024-08-06T19:56:34.092+00:00\",\"$updatedAt\":\"2024-08-06T19:58:07.348+00:00\",\"$permissions\":[],\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66ae9fc00025ac4542d6\"},\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66aea1a7003cba1f2b86\"},\"$databaseId\":\"66ae9f440015b50a678b\",\"$collectionId\":\"66b1f8ea001d5b79ca27\"}","body":{"action":"{\"module\":\"home-assistant\",\"action\":\"set\", \"payload\" : {\"channel\":\"light.kitchen_lights\", \"value\":\"on\"}}","state":"waiting","$id":"66b3c77a0034311279e4","$permissions":[],"$createdAt":"2024-08-07T19:14:03.457+00:00","$updatedAt":"2024-08-07T19:14:03.457+00:00","thought":{"thought":"{\"situation\":\"L'utente xFr4xx mi ha chiesto di accendere la luce del bagno.\",\"interpretation\":\"L'utente desidera che io interagisca con l'ambiente tramite Home Assistant.\",\"reflection\":\"Devo verificare se ho le informazioni necessarie per eseguire l'azione. Se non ho il nome dell'entità 'luce del bagno', dovrò chiedere maggiori dettagli.\"}","$id":"66b3af380029da08ba04","$createdAt":"2024-08-07T17:30:32.747+00:00","$updatedAt":"2024-08-07T19:13:21.133+00:00","$permissions":[],"message":{"message":"puoi accendere la luce del bagno ?","bot":false,"$id":"66b3af330005bc8fb2ea","$createdAt":"2024-08-07T17:30:27.171+00:00","$updatedAt":"2024-08-07T17:30:32.768+00:00","$permissions":[],"$databaseId":"66ae9f440015b50a678b","$collectionId":"66aea08e003d46e738fa"},"chat":{"channel":"telegram","chat_id":"7045034835","$id":"66b27ff2130cac12b5c0","$createdAt":"2024-08-06T19:56:34.092+00:00","$updatedAt":"2024-08-06T19:58:07.348+00:00","$permissions":[],"$databaseId":"66ae9f440015b50a678b","$collectionId":"66ae9fc00025ac4542d6"},"$databaseId":"66ae9f440015b50a678b","$collectionId":"66aea1a7003cba1f2b86"},"$databaseId":"66ae9f440015b50a678b","$collectionId":"66b1f8ea001d5b79ca27"},"headers":{"host":"66b3c6d57f9f6:3000","user-agent":"Appwrite/1.5.7","content-type":"application/json","x-appwrite-trigger":"event","x-appwrite-event":"databases.66ae9f440015b50a678b.collections.66b1f8ea001d5b79ca27.documents.66b3c77a0034311279e4.create","x-appwrite-user-id":"65eee35b6bf7806d9eb5","connection":"keep-alive","content-length":"1468"},"method":"POST","host":"66b3c6d57f9f6","scheme":"http","query":{},"queryString":"","port":3000,"url":"http://66b3c6d57f9f6:3000/","path":"/"}
-  log(`Try to connect to HA endpoint ${process.env.HA_ENDPOINT!}`);
-  const action = JSON.parse(req.body.action);
-  if (action.module === 'home-assistant') {
-    switch (action.action) {
-      case 'get':
+  try {
+    const action: Action = JSON.parse(req.body.action);
+    let new_action: Action | null = null;
+    debug(`action: ${JSON.stringify(action)}`);
+    log(`connect to Appwrite API`);
+    const client = new Client()
+      .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+      .setProject(process.env.APPWRITE_PROJECT_ID!)
+      .setKey(process.env.APPWRITE_API_KEY!);
+    let datastore = new Databases(client);
+    if (req.body.action) {
+      if (action.module === 'core' && action.channel !== 'telegram') {
         switch (action.channel) {
-          case 'lights':
-          default:
-            log(`Try to get Light HA Entities`);
-            const request = (
-              await fetch(`${process.env.HA_ENDPOINT}/states`, {
-                headers: headers,
-              })
-            ).text();
-            const ha_entities = await request;
-            const entities: { entity_id: any; friendly_name: any }[] = [];
-            debug(`entities: ${JSON.stringify(ha_entities)}`);
-            JSON.parse(ha_entities).forEach((entity: any) => {
-              if (entity.entity_id.search('light') !== -1) {
-                entities.push({
-                  entity_id: entity.entity_id,
-                  friendly_name: entity.attributes.friendly_name,
-                });
-              }
-            });
-            log(`founded this some light`);
-            log(JSON.stringify(entities));
-            log('connect to appwrite api');
-            const client = new Client()
-              .setEndpoint(process.env.APPWRITE_ENDPOINT!)
-              .setProject(process.env.APPWRITE_PROJECT_ID!)
-              .setKey(process.env.APPWRITE_API_KEY!);
-            let datastore = new Databases(client);
-            await datastore.createDocument(
+          case 'store': //add memory slot on ltm
+            log('add new information on Long Term Memory');
+            debug(`memory slot key: ${action.payload?.key}`);
+            debug(`memory slot value: ${action.payload?.value}`);
+            const ltm_slot = await datastore.createDocument(
               process.env.APPWRITE_DATABASE_ID!,
-              process.env.APPWRITE_TABLE_MESSAGES_ID!,
+              process.env.APPWRITE_TABLE_LTM_ID!,
               ID.unique(),
               {
-                message: `{ 'module': 'home-assistant', 'action': 'input', 'channel': 'lights', 'payload': {'value': '${JSON.stringify(entities)}' }}`,
-                bot: false,
-                chat: req.body.thought.chat.$id,
+                key: action.payload?.key,
+                value: action.payload?.value,
               }
             );
-            log(`added result to message queue`);
+            break;
+          case 'stop': //stop conversation
+          case 'rethink': //resend rethink command
+            log(`Conversation is ended, send confirm to IA`);
+            new_action = action;
+            new_action.action = 'input';
+            break;
+          default: //at this moment do anything
         }
-        break;
-      case 'set':
-      default:
-        log(
-          `Try to turn ${action.payload.value} ${action.payload.channel} device`
-        );
-        const request = (
-          await fetch(
-            `${process.env.HA_ENDPOINT}/states/${action.channel}`,
-            {
-              headers: headers,
-              method: 'POST',
-              body: JSON.stringify({ state: action.payload.value }),
-            }
-          )
-        ).text();
-        const result = await request;
-        log(JSON.stringify(result));
+      } else {
+        log(`This action not is for this module`);
+      }
+    } else {
+      log(`not action here, send time action`);
+      new_action = {
+        module: 'core',
+        action: 'input',
+        channel: 'time',
+        payload: { value: new Date().toISOString() },
+      };
     }
-  } else {
-    log(`This action not is for this module`);
-  }
-
-  if (req.method === 'GET') {
-    return res.send('Silicia - Giul-IA BOT - home assistant module');
-  }
-  return res.empty();
-  /*} catch (e: any) {
+    if (new_action) {
+      log('add new action in conversation');
+      debug(`new action: ${new_action}`);
+      const client = new Client()
+        .setEndpoint(process.env.APPWRITE_ENDPOINT!)
+        .setProject(process.env.APPWRITE_PROJECT_ID!)
+        .setKey(process.env.APPWRITE_API_KEY!);
+      let datastore = new Databases(client);
+      datastore.createDocument(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_TABLE_MESSAGES_ID!,
+        ID.unique(),
+        {
+          message: JSON.stringify(new_action),
+          bot: false,
+          chat: req.body.thought.chat.$id,
+        }
+      );
+    }
+    if (req.method === 'GET') {
+      return res.send('Silicia - Giul-IA BOT - core module');
+    }
+    return res.empty();
+  } catch (e: any) {
     error(String(e));
-  }*/
+  }
 };
