@@ -1,48 +1,6 @@
-# ⚡ Node.js Starter Function
+# fn-giulia-core-module
 
-A simple starter function. Edit `src/main.js` to get started and create something awesome! 🚀
+This function is executed every 59 minutes (in production it will be scheduled every minute) and has the task of providing the exact time to Giul-IA, it is also executed every time Giul-IA inserts an action related to the core module into the actions queue. At the moment these are the incoming actions:
 
-## 🧰 Usage
-
-### GET /
-
-- Returns a "Hello, World!" message.
-
-**Response**
-
-Sample `200` Response:
-
-```text
-Hello, World!
-```
-
-### POST, PUT, PATCH, DELETE /
-
-- Returns a "Learn More" JSON response.
-
-**Response**
-
-Sample `200` Response:
-
-```json
-{
-  "motto": "Build like a team of hundreds_",
-  "learn": "https://appwrite.io/docs",
-  "connect": "https://appwrite.io/discord",
-  "getInspired": "https://builtwith.appwrite.io"
-}
-```
-
-## ⚙️ Configuration
-
-| Setting           | Value         |
-| ----------------- | ------------- |
-| Runtime           | Node (18.0)   |
-| Entrypoint        | `src/main.js` |
-| Build Commands    | `npm install` |
-| Permissions       | `any`         |
-| Timeout (Seconds) | 15            |
-
-## 🔒 Environment Variables
-
-No environment variables required.
+{ "module": "core", "action": "output", "channel": "stop" } //for future use it communicates to the system that the current conversation has ended
+{ "module": "core", "action": "output", "channel": "store", "payload": { "key": string, "value": string } } //stores the data in the long-term memory LTM
