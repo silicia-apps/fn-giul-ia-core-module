@@ -1,3 +1,4 @@
+import { profile } from 'console';
 import { Client, Databases, Query, ID, Models } from 'node-appwrite';
 
 //import * as process from './env.js';
@@ -135,15 +136,31 @@ export default async ({ req, res, log, error }: Context) => {
             debug(`memory slot value: ${action.payload?.value}`);
             const values = [];
             values.push(action.payload?.value); //we need to provide a logic for remove or mantain old values
+            log(`search for chat with id ${req.body.thought.chat.$id}`)
+            const chats = await datastore.listDocuments(
+              process.env.APPWRITE_DATABASE_ID!,
+              process.env.APPWRITE_TABLE_CHATS_ID!,
+              [
+                Query.equal('channel', 'telegram'),
+                Query.equal('chatid', String(req.body.thought.chat.$id)),
+                Query.limit(1),
+              ]
+            );
+            if (chats.total > 0) {
+            log (`extract profile id ${chats.documents[0].profile.$id}`)
             const ltm_slot = await datastore.createDocument(
               process.env.APPWRITE_DATABASE_ID!,
               process.env.APPWRITE_TABLE_LTM_ID!,
               ID.unique(),
               {
                 key: action.payload?.key,
-                value: values
+                value: values,
+                profile: chats.documents[0].profile.$id
               }
             );
+          } else {
+            error(`Chat not found.`);
+          }
             break;
           case 'stop': //stop conversation
           case 'rethink': //resend rethink command
