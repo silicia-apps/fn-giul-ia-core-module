@@ -122,7 +122,8 @@ export default async ({ req, res, log, error }: Context) => {
       .setEndpoint(process.env.APPWRITE_ENDPOINT!)
       .setProject(process.env.APPWRITE_PROJECT_ID!)
       .setKey(process.env.APPWRITE_API_KEY!);
-    let datastore = new Databases(client);
+    const datastore = new Databases(client);
+    const chatids: string[] = [];
     if (req.body.action) {
       const action: Action = JSON.parse(req.body.action);
       debug(`action: ${JSON.stringify(action)}`);
@@ -150,11 +151,20 @@ export default async ({ req, res, log, error }: Context) => {
             break;
           default: //at this moment do anything
         }
+        chatids.push(req.body.thought.chat.$id);
       } else {
         log(`This action not is for this module`);
       }
     } else {
       log(`not action here, send time action`);
+      const chats = await datastore.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_TABLE_CHATS_ID!,[Query.select(['$id'])]
+      );
+      debug(`chats: ${JSON.stringify(chats)}`);
+      chats.documents.forEach((chat) => {
+        chatids.push(chat.$id);
+      });
       new_action = {
         module: 'core',
         action: 'input',
@@ -164,22 +174,25 @@ export default async ({ req, res, log, error }: Context) => {
     }
     if (new_action) {
       log('add new action in conversation');
-      debug(`new action: ${new_action}`);
+      debug(`new action: ${JSON.stringify(new_action)}`);
       const client = new Client()
         .setEndpoint(process.env.APPWRITE_ENDPOINT!)
         .setProject(process.env.APPWRITE_PROJECT_ID!)
         .setKey(process.env.APPWRITE_API_KEY!);
       let datastore = new Databases(client);
-      datastore.createDocument(
-        process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_TABLE_MESSAGES_ID!,
-        ID.unique(),
-        {
-          message: JSON.stringify(new_action),
-          bot: false,
-          chat: req.body.thought.chat.$id,
-        }
-      );
+      chatids.forEach(chatid => {
+        debug(`Send Action to chat ${chatid}`);
+        datastore.createDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_TABLE_MESSAGES_ID!,
+          ID.unique(),
+          {
+            message: JSON.stringify(new_action),
+            bot: false,
+            chat: chatid
+          }
+        );  
+      });
     }
     if (req.method === 'GET') {
       return res.send('Silicia - Giul-IA BOT - core module');
