@@ -116,9 +116,7 @@ export default async ({ req, res, log, error }: Context) => {
   }
   debug(`request: ${JSON.stringify(req.body)}`);
   try {
-    
     let new_action: Action | null = null;
-    debug(`action: ${JSON.stringify(action)}`);
     log(`connect to Appwrite API`);
     const client = new Client()
       .setEndpoint(process.env.APPWRITE_ENDPOINT!)
@@ -127,6 +125,7 @@ export default async ({ req, res, log, error }: Context) => {
     let datastore = new Databases(client);
     if (req.body.action) {
       const action: Action = JSON.parse(req.body.action);
+      debug(`action: ${JSON.stringify(action)}`);
       if (action.module === 'core' && action.channel !== 'telegram') {
         switch (action.channel) {
           case 'store': //add memory slot on ltm
