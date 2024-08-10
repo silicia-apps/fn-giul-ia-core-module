@@ -133,13 +133,15 @@ export default async ({ req, res, log, error }: Context) => {
             log('add new information on Long Term Memory');
             debug(`memory slot key: ${action.payload?.key}`);
             debug(`memory slot value: ${action.payload?.value}`);
+            const values = [];
+            values.push(action.payload?.value); //we need to provide a logic for remove or mantain old values
             const ltm_slot = await datastore.createDocument(
               process.env.APPWRITE_DATABASE_ID!,
               process.env.APPWRITE_TABLE_LTM_ID!,
               ID.unique(),
               {
                 key: action.payload?.key,
-                value: action.payload?.value,
+                value: values
               }
             );
             break;
