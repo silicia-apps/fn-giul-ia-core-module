@@ -163,6 +163,7 @@ export default async ({ req, res, log, error }: Context) => {
           }
             break;
           case 'stop': //stop conversation
+            break;
           case 'rethink': //resend rethink command
             log(`Conversation is ended, send confirm to IA`);
             new_action = action;
