@@ -136,7 +136,7 @@ export default async ({ req, res, log, error }: Context) => {
             log(`The IA stop the conversation`);
             new_action = action;
             new_action.action = 'input';
-            new_action.payload = {"type":"text","value":`Analizza la discussione ed organizza i dati per memorizzarli (su un database vettoriale Qdrant),
+            new_action.payload = {"chatid": req.body.thought.chat.$id, "type":"text","value":`Analizza la discussione ed organizza i dati per memorizzarli (su un database vettoriale Qdrant),
 classifica i dati nel seguente modo:
 
 - memoria episodica: è la capacità di ricordare esperienze personali, specifiche e contestualizzate nel tempo e nello spazio. Ti permette di "rivivere" mentalmente eventi passati, ricordando dettagli come chi era presente, dove e quando è successo.
