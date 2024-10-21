@@ -126,7 +126,7 @@ export default async ({ req, res, log, error }: Context) => {
     const datastore = new Databases(client);
     const chatids: string[] = [];
     if (req.body.action) {
-      const action: Action = JSON.parse(req.body.action);
+      let action: Action = JSON.parse(req.body.action);
       debug(`action: ${JSON.stringify(action)}`);
       if (action.module === 'core' && action.channel !== 'telegram') {
         switch (action.channel) {
@@ -136,7 +136,7 @@ export default async ({ req, res, log, error }: Context) => {
             log(`The IA stop the conversation`);
             new_action = action;
             new_action.action = 'input';
-            new_action.payload!.value = `Analizza la discussione ed organizza i dati per memorizzarli (su un database vettoriale Qdrant),
+            new_action.payload = {"type":"text","value":`Analizza la discussione ed organizza i dati per memorizzarli (su un database vettoriale Qdrant),
 classifica i dati nel seguente modo:
 
 - memoria episodica: è la capacità di ricordare esperienze personali, specifiche e contestualizzate nel tempo e nello spazio. Ti permette di "rivivere" mentalmente eventi passati, ricordando dettagli come chi era presente, dove e quando è successo.
@@ -153,7 +153,7 @@ al termine invia le azioni per memorizzare i dati nel seguente formato:
 
 { 'module': 'core', 'action': 'store', 'channel': 'memoria episodica|memoria semantica|memoria autobiografica|memoria prospettica|memoria procedurale', 'payload': { 'value': string, tags: string[] }}
 
-`;
+`};
             break;
           case 'rethink': //resend rethink command
             log(`The IA Need some extra time for make his thought`);
