@@ -130,42 +130,33 @@ export default async ({ req, res, log, error }: Context) => {
       debug(`action: ${JSON.stringify(action)}`);
       if (action.module === 'core' && action.channel !== 'telegram') {
         switch (action.channel) {
-          case 'store': //add memory slot on ltm
-            log('add new information on Long Term Memory');
-            debug(`memory slot key: ${action.payload?.key}`);
-            debug(`memory slot value: ${action.payload?.value}`);
-            const values = [];
-            values.push(action.payload?.value); //we need to provide a logic for remove or mantain old values
-            log(`search for chat with id ${req.body.thought.chat.$id}`)
-            const chats = await datastore.listDocuments(
-              process.env.APPWRITE_DATABASE_ID!,
-              process.env.APPWRITE_TABLE_CHATS_ID!,
-              [
-                Query.equal('channel', 'telegram'),
-                Query.equal('$id', String(req.body.thought.chat.$id)),
-                Query.limit(1),
-              ]
-            );
-            if (chats.total > 0) {
-            log (`extract profile id ${chats.documents[0].profile.$id}`)
-            const ltm_slot = await datastore.createDocument(
-              process.env.APPWRITE_DATABASE_ID!,
-              process.env.APPWRITE_TABLE_LTM_ID!,
-              ID.unique(),
-              {
-                key: action.payload?.key,
-                value: values,
-                profile: chats.documents[0].profile.$id
-              }
-            );
-          } else {
-            error(`Chat not found.`);
-          }
+          case 'store':
             break;
           case 'stop': //stop conversation
+            log(`The IA stop the conversation`);
+            new_action = action;
+            new_action.action = 'input';
+            new_action.payload!.value = `Analizza la discussione ed organizza i dati per memorizzarli (su un database vettoriale Qdrant),
+classifica i dati nel seguente modo:
+
+- memoria episodica: è la capacità di ricordare esperienze personali, specifiche e contestualizzate nel tempo e nello spazio. Ti permette di "rivivere" mentalmente eventi passati, ricordando dettagli come chi era presente, dove e quando è successo.
+- memoria semantica: è la memoria delle conoscenze generali e dei fatti, indipendentemente da quando e dove li hai appresi.
+- memoria autobiografica: è l'insieme dei ricordi che hanno plasmato la tua identità e il tuo rapporto con il mondo, visti attraverso la lente del tuo "io". è un sistema complesso che organizza e dà senso alle tue esperienze di vita, costruendo la tua identità e la tua visione del mondo.
+memoria prospettica: il ricordarsi di portare a termine quelle intenzioni che, per diverse ragioni, non possono essere realizzate nel momento stesso in cui vengono formulate, ma devono essere rimandate ad un momento successivo
+memoria procedurale: si utilizza nel momento in cui dobbiamo fornire una performance o una semplice attività quotidiana divenuta routinaria e contiene le istruzioni passo passo per eseguire l'attività
+
+Esempi :
+memoria episodica: Ricordare il giorno della laurea, con tutti i dettagli ad essa legati, a differenza di un ricordo generico di aver accompagnato i figli a scuola.
+memoria semnantica : sapere che Parigi è la capitale della Francia, conoscere le regole della grammatica, o comprendere il concetto di "mammifero".
+
+al termine invia le azioni per memorizzare i dati nel seguente formato:
+
+{ 'module': 'core', 'action': 'store', 'channel': 'memoria episodica|memoria semantica|memoria autobiografica|memoria prospettica|memoria procedurale', 'payload': { 'value': string, tags: string[] }}
+
+`;
             break;
           case 'rethink': //resend rethink command
-            log(`Conversation is ended, send confirm to IA`);
+            log(`The IA Need some extra time for make his thought`);
             new_action = action;
             new_action.action = 'input';
             break;
@@ -179,7 +170,7 @@ export default async ({ req, res, log, error }: Context) => {
       log(`not action here, send time action`);
       const chats = await datastore.listDocuments(
         process.env.APPWRITE_DATABASE_ID!,
-        process.env.APPWRITE_TABLE_CHATS_ID!,[Query.select(['$id'])]
+        process.env.APPWRITE_TABLE_CHATS_ID!, [Query.select(['$id'])]
       );
       debug(`chats: ${JSON.stringify(chats)}`);
       chats.documents.forEach((chat) => {
@@ -211,7 +202,7 @@ export default async ({ req, res, log, error }: Context) => {
             bot: false,
             chat: chatid
           }
-        );  
+        );
       });
     }
     if (req.method === 'GET') {
@@ -221,4 +212,4 @@ export default async ({ req, res, log, error }: Context) => {
   } catch (e: any) {
     error(String(e));
   }
-};
+}
